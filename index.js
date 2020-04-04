@@ -18,6 +18,15 @@ app.get('/indianStats', function (req, res) {
         .then(axios.spread((data, distData) => {
             var finalData = data.data;
             var districtData = distData.data;
+            var confirmedGraph;
+            var recoveredGraph;
+            var deathGraph;
+            finalData.cases_time_series = finalData.cases_time_series.map(elm => {
+                confirmedGraph.push(+elm.dailyconfirmed)
+                recoveredGraph.push(+elm.dailyrecovered);
+                deathGraph.push(+elm.dailydeceased)
+                return elm;
+            })
             finalData.statewise = finalData.statewise.map(element => {
                 if (element.statecode == 'TT') {
                     time = element.lastupdatedtime;
@@ -60,6 +69,9 @@ app.get('/indianStats', function (req, res) {
 
             response = {
                 time,
+                confirmedGraph,
+                recoveredGraph,
+                deathGraph,
                 confirmed,
                 recovered,
                 death,
