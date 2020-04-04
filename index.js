@@ -33,9 +33,9 @@ app.get('/indianStats', function (req, res) {
                     confirmed = element.confirmed;
                     recovered = element.recovered;
                     death = element.deaths;
-                    todayConfirmed = element.delta.confirmed.toString();
-                    todayRecovered = element.delta.recovered.toString();
-                    todayDeath = element.delta.deaths.toString();
+                    todayConfirmed = element.deltaconfirmed.toString();
+                    todayRecovered = element.deltarecovered.toString();
+                    todayDeath = element.deltadeaths.toString();
                 }
                 else {
                     let district = [];
@@ -55,9 +55,9 @@ app.get('/indianStats', function (req, res) {
                             "totalDeath": element.deaths,
                             "totalConfirmed": element.confirmed,
                             "totalRecovered": element.recovered,
-                            "todayDeath": element.delta.deaths.toString(),
-                            "todayRecovered": element.delta.recovered.toString(),
-                            "todayConfirmed": element.delta.confirmed.toString(),
+                            "todayDeath": element.deltadeaths.toString(),
+                            "todayRecovered": element.deltarecovered.toString(),
+                            "todayConfirmed": element.deltaconfirmed.toString(),
                             "districts": district
                         }
                     )
