@@ -22,11 +22,18 @@ app.get('/indianStats', function (req, res) {
             var recoveredGraph = [];
             var deathGraph = [];
             finalData.cases_time_series = finalData.cases_time_series.map(elm => {
-                confirmedGraph.push(+(elm.dailyconfirmed+'.1'));
-                recoveredGraph.push(+(elm.dailyrecovered+'.1'));
-                deathGraph.push(+(elm.dailydeceased+'.1'));
+                if (moment(elm.date + '2020', 'DD MMMM YYYY').isAfter(moment('2020-03-01','YYYY-MM-DD')))
+                {
+                confirmedGraph.push(+(elm.dailyconfirmed + '.1'));
+                recoveredGraph.push(+(elm.dailyrecovered + '.1'));
+                deathGraph.push(+(elm.dailydeceased + '.1'));
+                }
+
                 return elm;
             })
+            confirmedGraph = confirmedGraph.slice(Math.max(confirmedGraph.length - 12, 1))
+            recoveredGraph = recoveredGraph.slice(Math.max(recoveredGraph.length - 12, 1));
+            deathGraph = deathGraph.slice(Math.max(deathGraph.length - 12, 1))
             finalData.statewise = finalData.statewise.map(element => {
                 if (element.statecode == 'TT') {
                     time = element.lastupdatedtime;
