@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = 80;
+const port = process.env.PORT || 5000;
 var moment = require('moment');
 const axios = require('axios');
 app.get('/indianStats', function (req, res) {
