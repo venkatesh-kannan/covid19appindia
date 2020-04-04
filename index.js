@@ -22,9 +22,9 @@ app.get('/indianStats', function (req, res) {
             var recoveredGraph = [];
             var deathGraph = [];
             finalData.cases_time_series = finalData.cases_time_series.map(elm => {
-                confirmedGraph.push(+elm.dailyconfirmed)
-                recoveredGraph.push(+elm.dailyrecovered);
-                deathGraph.push(+elm.dailydeceased)
+                confirmedGraph.push((+elm.dailyconfirmed).toFixed(2))
+                recoveredGraph.push((+elm.dailyrecovered).toFixed(2));
+                deathGraph.push((+elm.dailydeceased).toFixed(2))
                 return elm;
             })
             finalData.statewise = finalData.statewise.map(element => {
