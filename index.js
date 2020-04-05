@@ -14,7 +14,9 @@ app.get('/indianStats', function (req, res) {
     var stateData = [];
     var todayDeath;
     var todayRecovered;
-    axios.all([axios.get('https://api.covid19india.org/data.json'), axios.get('https://api.covid19india.org/state_district_wise.json')])
+    axios.all([
+        axios.get('https://api.covid19india.org/data.json'),
+        axios.get('https://api.covid19india.org/state_district_wise.json')])
         .then(axios.spread((data, distData) => {
             var finalData = data.data;
             var districtData = distData.data;
@@ -22,11 +24,10 @@ app.get('/indianStats', function (req, res) {
             var recoveredGraph = [];
             var deathGraph = [];
             finalData.cases_time_series = finalData.cases_time_series.map(elm => {
-                if (moment(elm.date + '2020', 'DD MMMM YYYY').isAfter(moment('2020-03-01','YYYY-MM-DD')))
-                {
-                confirmedGraph.push(+(elm.dailyconfirmed + '.1'));
-                recoveredGraph.push(+(elm.dailyrecovered + '.1'));
-                deathGraph.push(+(elm.dailydeceased + '.1'));
+                if (moment(elm.date + '2020', 'DD MMMM YYYY').isAfter(moment('2020-03-01', 'YYYY-MM-DD'))) {
+                    confirmedGraph.push(+(elm.dailyconfirmed + '.1'));
+                    recoveredGraph.push(+(elm.dailyrecovered + '.1'));
+                    deathGraph.push(+(elm.dailydeceased + '.1'));
                 }
 
                 return elm;
@@ -46,8 +47,8 @@ app.get('/indianStats', function (req, res) {
                 }
                 else {
                     let district = [];
-                    console.log(element.state);
                     if (districtData[element.state])
+                    {
                         for (let key in districtData[element.state].districtData) {
                             district.push({
                                 name: key,
@@ -55,6 +56,11 @@ app.get('/indianStats', function (req, res) {
                                 todayCount: districtData[element.state].districtData[key].delta.confirmed.toString()
                             });
                         }
+                        district.sort(function(a, b){
+                            return b.count-a.count
+                        })
+                    }
+                        
                     stateData.push(
                         {
                             state: element.state,
@@ -97,4 +103,4 @@ app.get('/indianStats', function (req, res) {
         });
 }
 );
-app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`))
+app.listen(port, () => console.log(`App listening at ${port}`))
