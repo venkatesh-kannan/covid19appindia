@@ -91,14 +91,14 @@ app.get('/indianStats', function (req, res) {
 
                     }
                     if (stateStats && stateStats.total) {
-                        totalTest = abbreviateNumber(stateStats.total.tested.samples);
+                        totalTest = formatNumber(stateStats.total.tested.samples);
                     }
                     else {
                         totalTest = "0";
                     }
                     if (stateStats && stateStats.delta) {
                         if (stateStats.delta.tested && stateStats.delta.tested.samples) {
-                            todayTest = abbreviateNumber(stateStats.delta.tested.samples);
+                            todayTest = formatNumber(stateStats.delta.tested.samples);
 
                         }
                         else {
