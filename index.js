@@ -72,7 +72,7 @@ app.get('/indianStats', function (req, res) {
                     let lastUpdated = '';
                     if(stateStats && stateStats.meta)
                     {
-lastUpdated = stateStats.meta.last_updated
+lastUpdated = stateStats.meta.last_updated ? moment(stateStats.meta.last_updated).format('YYYY-MM-DD hh:mm A') : ''
                     }
                     stateData.push(
                         {
