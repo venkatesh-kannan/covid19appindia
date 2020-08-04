@@ -137,6 +137,10 @@ app.get('/indianStats', function (req, res) {
             });
 
 
+            stateData.sort(function (a, b) {
+                return (b.totalConfirmed.split(',').join('')) - (a.totalConfirmed.split(',').join(''))
+            })
+
             response = {
                 time,
                 confirmedGraph,
