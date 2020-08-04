@@ -55,8 +55,8 @@ app.get('/indianStats', function (req, res) {
                     todayRecovered = formatNumber(element.deltarecovered);
                     todayDeath = formatNumber(element.deltadeaths);
                     var stateStats = minData[element.statecode];
-                    TotalTested = stateStats.total.tested.samples;
-                    TotalTodayTested = stateStats.delta.tested && stateStats.delta.tested.states && stateStats.delta.tested.states.samples ? stateStats.delta.tested.states.samples : 0;                }
+                    TotalTested = formatNumber(stateStats.total.tested.samples) ;
+                    TotalTodayTested = stateStats.delta.tested && stateStats.delta.tested.states && stateStats.delta.tested.states.samples ? formatNumber(stateStats.delta.tested.states.samples)  : "0";                }
                 else {
                     let district = [];
                     if (districtData[element.state]) {
