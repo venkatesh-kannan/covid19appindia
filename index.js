@@ -169,6 +169,10 @@ app.get('/globalStats',function (req,res) {
     axios.all([
         axios.get('https://api.covid19api.com/summary')])
         .then(axios.spread((data) => {
+            data.data.Countries = data.data.Countries.map(con => {
+                con.showCountry = false;
+                return con;
+            })
             res.send(data.data)
         }))
     
