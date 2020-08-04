@@ -64,7 +64,12 @@ app.get('/indianStats', function (req, res) {
                             district.push({
                                 name: key,
                                 count: districtData[element.state].districtData[key].confirmed ,
-                                todayCount: formatNumber(districtData[element.state].districtData[key].delta.confirmed)
+                                todayCount: formatNumber(districtData[element.state].districtData[key].delta.confirmed),
+                                todayRecovered:formatNumber(districtData[element.state].districtData[key].delta.recovered),
+                                todayDeceased:formatNumber(districtData[element.state].districtData[key].delta.deceased),
+                                active:formatNumber(districtData[element.state].districtData[key].active),
+                                recovered:formatNumber(districtData[element.state].districtData[key].recovered),
+                                deceased:formatNumber(districtData[element.state].districtData[key].deceased),
                             });
                         }
                         district.sort(function (a, b) {
