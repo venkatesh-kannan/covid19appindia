@@ -47,30 +47,33 @@ app.get('/indianStats', function (req, res) {
             finalData.statewise = finalData.statewise.map(element => {
                 if (element.statecode == 'TT') {
                     time = element.lastupdatedtime ? moment(element.lastupdatedtime, 'DD/MM/YYYY HH:mm:ss').format('YYYY-MM-DD hh:mm A') + ' IST' : '';
-                    confirmed = element.confirmed;
-                    recovered = element.recovered;
-                    death = element.deaths;
-                    active = element.active;
-                    todayConfirmed = element.deltaconfirmed.toString();
-                    todayRecovered = element.deltarecovered.toString();
-                    todayDeath = element.deltadeaths.toString();
+                    confirmed = formatNumber(element.confirmed) ;
+                    recovered = formatNumber(element.recovered) ;
+                    death = formatNumber(element.deaths) ;
+                    active = formatNumber(element.active) ;
+                    todayConfirmed = formatNumber(element.deltaconfirmed);
+                    todayRecovered = formatNumber(element.deltarecovered);
+                    todayDeath = formatNumber(element.deltadeaths);
                     var stateStats = minData[element.statecode];
                     TotalTested = stateStats.total.tested.samples;
-                    TotalTodayTested = stateStats.delta.tested.states.samples
-                }
+                    TotalTodayTested = stateStats.delta.tested && stateStats.delta.tested.states && stateStats.delta.tested.states.samples ? stateStats.delta.tested.states.samples : 0;                }
                 else {
                     let district = [];
                     if (districtData[element.state]) {
                         for (let key in districtData[element.state].districtData) {
                             district.push({
                                 name: key,
-                                count: districtData[element.state].districtData[key].confirmed.toString(),
-                                todayCount: districtData[element.state].districtData[key].delta.confirmed.toString()
+                                count: districtData[element.state].districtData[key].confirmed ,
+                                todayCount: formatNumber(districtData[element.state].districtData[key].delta.confirmed)
                             });
                         }
                         district.sort(function (a, b) {
                             return b.count - a.count
                         })
+                        for(let d=0;d < district.length; d++)
+                        {
+                            district[d].count = formatNumber(district[d].count)
+                        }
                     }
                     let stateStats = minData[element.statecode];
                     let lastUpdated = '';
@@ -91,7 +94,7 @@ app.get('/indianStats', function (req, res) {
                         totalTest = abbreviateNumber(stateStats.total.tested.samples);
                     }
                     else {
-                        totalTest = 0;
+                        totalTest = "0";
                     }
                     if (stateStats && stateStats.delta) {
                         if (stateStats.delta.tested && stateStats.delta.tested.samples) {
@@ -99,28 +102,31 @@ app.get('/indianStats', function (req, res) {
 
                         }
                         else {
-                            todayTest = 0;
+                            todayTest = "0";
                         }
 
                     }
                     else
                     {
-                        todayTest = 0;
+                        todayTest = "0";
                     }
                     stateData.push(
                         {
-                            state: element.state,
+                            //
+                            state: element.state.length > 25 ? 
+                            element.state.substring(0, 25 - 3) + "..." : 
+                            element.state,
                             showDistrict: false,
                             "lastUpdated": lastUpdated,
-                            "totalDeath": element.deaths,
-                            "totalConfirmed": element.confirmed,
-                            "totalRecovered": element.recovered,
-                            "totalActive": element.active,
+                            "totalDeath": formatNumber(element.deaths),
+                            "totalConfirmed": formatNumber(element.confirmed),
+                            "totalRecovered": formatNumber(element.recovered),
+                            "totalActive": formatNumber(element.active),
                             "totalTest": totalTest,
                             "todayTest": todayTest,
-                            "todayDeath": element.deltadeaths.toString(),
-                            "todayRecovered": element.deltarecovered.toString(),
-                            "todayConfirmed": element.deltaconfirmed.toString(),
+                            "todayDeath": formatNumber(element.deltadeaths),
+                            "todayRecovered": formatNumber(element.deltarecovered) ,
+                            "todayConfirmed": formatNumber(element.deltaconfirmed),
                             "districts": district,
 
                         }
@@ -175,6 +181,16 @@ function abbreviateNumber(value) {
         newValue = shortValue + suffixes[suffixNum];
     }
     return newValue;
+}
+
+function formatNumber(val){
+    var x=val;
+    x=x.toString();
+    var lastThree = x.substring(x.length-3);
+    var otherNumbers = x.substring(0,x.length-3);
+    if(otherNumbers != '')
+        lastThree = ',' + lastThree;
+    return otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree;
 }
 
 app.listen(port, () => console.log(`App listening at ${port}`))
