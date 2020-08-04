@@ -12,28 +12,35 @@ app.get('/indianStats', function (req, res) {
     var recovered;
     var todayConfirmed;
     var stateData = [];
+    var active;
     var todayDeath;
     var todayRecovered;
     axios.all([
         axios.get('https://api.covid19india.org/data.json'),
-        axios.get('https://api.covid19india.org/state_district_wise.json')])
-        .then(axios.spread((data, distData) => {
+        axios.get('https://api.covid19india.org/state_district_wise.json'),
+        axios.get('https://api.covid19india.org/v5/min/data.min.json')])
+
+        .then(axios.spread((data, distData,minData) => {
             var finalData = data.data;
             var districtData = distData.data;
+            var minData = minData.data;
             var confirmedGraph = [];
             var recoveredGraph = [];
             var deathGraph = [];
+            var activeGraph = [];
+            var activeCases = 0;
             finalData.cases_time_series = finalData.cases_time_series.map(elm => {
                 if (moment(elm.date + '2020', 'DD MMMM YYYY').isAfter(moment('2020-03-01', 'YYYY-MM-DD'))) {
                     confirmedGraph.push(+(elm.dailyconfirmed + '.1'));
                     recoveredGraph.push(+(elm.dailyrecovered + '.1'));
                     deathGraph.push(+(elm.dailydeceased + '.1'));
+                    activeGraph.push(+((+elm.dailyconfirmed - (+elm.dailyrecovered + +elm.dailydeceased)) + '.1'))
                 }
-
                 return elm;
-            })
+            });
             confirmedGraph = confirmedGraph.slice(Math.max(confirmedGraph.length - 12, 1))
             recoveredGraph = recoveredGraph.slice(Math.max(recoveredGraph.length - 12, 1));
+            activeGraph = activeGraph.slice(Math.max(activeGraph.length - 12, 1));
             deathGraph = deathGraph.slice(Math.max(deathGraph.length - 12, 1))
             finalData.statewise = finalData.statewise.map(element => {
                 if (element.statecode == 'TT') {
@@ -41,6 +48,7 @@ app.get('/indianStats', function (req, res) {
                     confirmed = element.confirmed;
                     recovered = element.recovered;
                     death = element.deaths;
+                    active = element.active;
                     todayConfirmed = element.deltaconfirmed.toString();
                     todayRecovered = element.deltarecovered.toString();
                     todayDeath = element.deltadeaths.toString();
@@ -60,18 +68,25 @@ app.get('/indianStats', function (req, res) {
                             return b.count-a.count
                         })
                     }
-                        
+                    let stateStats = minData[element.statecode];
+                    let lastUpdated = '';
+                    if(stateStats && stateStats.meta)
+                    {
+lastUpdated = stateStats.meta.last_updated
+                    }
                     stateData.push(
                         {
                             state: element.state,
                             showDistrict: false,
+                            "lastUpdated":lastUpdated,
                             "totalDeath": element.deaths,
                             "totalConfirmed": element.confirmed,
                             "totalRecovered": element.recovered,
+                            "totalActive": element.active,
                             "todayDeath": element.deltadeaths.toString(),
                             "todayRecovered": element.deltarecovered.toString(),
                             "todayConfirmed": element.deltaconfirmed.toString(),
-                            "districts": district
+                            "districts": district,
                         }
                     )
                 }
@@ -84,10 +99,12 @@ app.get('/indianStats', function (req, res) {
                 time,
                 confirmedGraph,
                 recoveredGraph,
+                activeGraph,
                 deathGraph,
                 confirmed,
                 recovered,
                 death,
+                active,
                 todayConfirmed,
                 todayRecovered,
                 todayDeath,
