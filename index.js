@@ -44,7 +44,7 @@ app.get('/indianStats', function (req, res) {
             deathGraph = deathGraph.slice(Math.max(deathGraph.length - 12, 1))
             finalData.statewise = finalData.statewise.map(element => {
                 if (element.statecode == 'TT') {
-                    time = element.lastupdatedtime;
+                    time = element.lastupdatedtime ? moment(element.lastupdatedtime, 'DD/MM/YYYY HH:mm:ss').format('YYYY-MM-DD hh:mm A') + ' IST': '';
                     confirmed = element.confirmed;
                     recovered = element.recovered;
                     death = element.deaths;
