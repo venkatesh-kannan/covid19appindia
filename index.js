@@ -20,7 +20,7 @@ app.get('/indianStats', function (req, res) {
         axios.get('https://api.covid19india.org/state_district_wise.json'),
         axios.get('https://api.covid19india.org/v5/min/data.min.json')])
 
-        .then(axios.spread((data, distData,minData) => {
+        .then(axios.spread((data, distData, minData) => {
             var finalData = data.data;
             var districtData = distData.data;
             var minData = minData.data;
@@ -55,8 +55,7 @@ app.get('/indianStats', function (req, res) {
                 }
                 else {
                     let district = [];
-                    if (districtData[element.state])
-                    {
+                    if (districtData[element.state]) {
                         for (let key in districtData[element.state].districtData) {
                             district.push({
                                 name: key,
@@ -64,21 +63,27 @@ app.get('/indianStats', function (req, res) {
                                 todayCount: districtData[element.state].districtData[key].delta.confirmed.toString()
                             });
                         }
-                        district.sort(function(a, b){
-                            return b.count-a.count
+                        district.sort(function (a, b) {
+                            return b.count - a.count
                         })
                     }
                     let stateStats = minData[element.statecode];
                     let lastUpdated = '';
-                    if(stateStats && stateStats.meta)
-                    {
-lastUpdated = stateStats.meta.last_updated ? moment(stateStats.meta.last_updated).format('YYYY-MM-DD hh:mm A') + ' IST' : ''
+                    if (stateStats && stateStats.meta) {
+                        let dateTime;
+                        if (stateStats.meta.last_updated) {
+                            let splitDate = stateStats.meta.last_updated.split('T');
+                            let splitTime = splitDate[1].split('+');
+                            console.log(splitDate[0], splitTime[0]);
+                            dateTime = splitDate[0] + ' ' + splitTime[0];
+                        }
+                        lastUpdated = stateStats.meta.last_updated ? moment(dateTime, 'YYYY-MM-DD HH:mm:ss').format('YYYY-MM-DD hh:mm A') + ' IST' : ''
                     }
                     stateData.push(
                         {
                             state: element.state,
                             showDistrict: false,
-                            "lastUpdated":lastUpdated,
+                            "lastUpdated": lastUpdated,
                             "totalDeath": element.deaths,
                             "totalConfirmed": element.confirmed,
                             "totalRecovered": element.recovered,
