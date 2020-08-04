@@ -165,6 +165,15 @@ app.get('/indianStats', function (req, res) {
 }
 );
 
+app.get('/globalStats',function (req,res) {
+    axios.all([
+        axios.get('https://api.covid19api.com/summary')])
+        .then(axios.spread((data) => {
+            res.send(data.data)
+        }))
+    
+})
+
 
 function abbreviateNumber(value) {
     var newValue = value;
