@@ -47,13 +47,13 @@ app.get('/indianStats', function (req, res) {
             finalData.statewise = finalData.statewise.map(element => {
                 if (element.statecode == 'TT') {
                     time = element.lastupdatedtime ? moment(element.lastupdatedtime, 'DD/MM/YYYY HH:mm:ss').format('YYYY-MM-DD hh:mm A') + ' IST' : '';
-                    confirmed = element.confirmed;
-                    recovered = element.recovered;
-                    death = element.deaths;
-                    active = element.active;
-                    todayConfirmed = element.deltaconfirmed.toString();
-                    todayRecovered = element.deltarecovered.toString();
-                    todayDeath = element.deltadeaths.toString();
+                    confirmed = formatNumber(element.confirmed) ;
+                    recovered = formatNumber(element.recovered) ;
+                    death = formatNumber(element.deaths) ;
+                    active = formatNumber(element.active) ;
+                    todayConfirmed = formatNumber(element.deltaconfirmed);
+                    todayRecovered = formatNumber(element.deltarecovered);
+                    todayDeath = formatNumber(element.deltadeaths);
                     var stateStats = minData[element.statecode];
                     TotalTested = stateStats.total.tested.samples;
                     TotalTodayTested = stateStats.delta.tested.states.samples
@@ -64,8 +64,8 @@ app.get('/indianStats', function (req, res) {
                         for (let key in districtData[element.state].districtData) {
                             district.push({
                                 name: key,
-                                count: districtData[element.state].districtData[key].confirmed.toString(),
-                                todayCount: districtData[element.state].districtData[key].delta.confirmed.toString()
+                                count: formatNumber(districtData[element.state].districtData[key].confirmed) ,
+                                todayCount: formatNumber(districtData[element.state].districtData[key].delta.confirmed)
                             });
                         }
                         district.sort(function (a, b) {
@@ -112,15 +112,15 @@ app.get('/indianStats', function (req, res) {
                             state: element.state,
                             showDistrict: false,
                             "lastUpdated": lastUpdated,
-                            "totalDeath": element.deaths,
-                            "totalConfirmed": element.confirmed,
-                            "totalRecovered": element.recovered,
-                            "totalActive": element.active,
+                            "totalDeath": formatNumber(element.deaths),
+                            "totalConfirmed": formatNumber(element.confirmed),
+                            "totalRecovered": formatNumber(element.recovered),
+                            "totalActive": formatNumber(element.active),
                             "totalTest": totalTest,
                             "todayTest": todayTest,
-                            "todayDeath": element.deltadeaths.toString(),
-                            "todayRecovered": element.deltarecovered.toString(),
-                            "todayConfirmed": element.deltaconfirmed.toString(),
+                            "todayDeath": formatNumber(element.deltadeaths),
+                            "todayRecovered": formatNumber(element.deltarecovered) ,
+                            "todayConfirmed": formatNumber(element.deltaconfirmed),
                             "districts": district,
 
                         }
@@ -175,6 +175,16 @@ function abbreviateNumber(value) {
         newValue = shortValue + suffixes[suffixNum];
     }
     return newValue;
+}
+
+function formatNumber(val){
+    var x=val;
+    x=x.toString();
+    var lastThree = x.substring(x.length-3);
+    var otherNumbers = x.substring(0,x.length-3);
+    if(otherNumbers != '')
+        lastThree = ',' + lastThree;
+    return otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree;
 }
 
 app.listen(port, () => console.log(`App listening at ${port}`))
