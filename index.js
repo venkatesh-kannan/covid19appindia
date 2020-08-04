@@ -181,6 +181,9 @@ app.get('/globalStats',function (req,res) {
             data.data.Countries = data.data.Countries.map(con => {
                 con.showCountry = false;
                 return con;
+            });
+            data.data.Countries.sort(function (a, b) {
+                return b.TotalConfirmed - a.TotalConfirmed
             })
             res.send(data.data)
         }))
