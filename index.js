@@ -15,6 +15,7 @@ app.get('/indianStats', function (req, res) {
     var TotalTodayTested = 0;
     var stateData = [];
     var active;
+    var subscriptions = [];
     var todayDeath;
     var todayRecovered;
     axios.all([
@@ -47,36 +48,46 @@ app.get('/indianStats', function (req, res) {
             finalData.statewise = finalData.statewise.map(element => {
                 if (element.statecode == 'TT') {
                     time = element.lastupdatedtime ? moment(element.lastupdatedtime, 'DD/MM/YYYY HH:mm:ss').format('YYYY-MM-DD hh:mm A') + ' IST' : '';
-                    confirmed = formatNumber(element.confirmed) ;
-                    recovered = formatNumber(element.recovered) ;
-                    death = formatNumber(element.deaths) ;
-                    active = formatNumber(element.active) ;
+                    confirmed = formatNumber(element.confirmed);
+                    recovered = formatNumber(element.recovered);
+                    death = formatNumber(element.deaths);
+                    active = formatNumber(element.active);
                     todayConfirmed = formatNumber(element.deltaconfirmed);
                     todayRecovered = formatNumber(element.deltarecovered);
                     todayDeath = formatNumber(element.deltadeaths);
                     var stateStats = minData[element.statecode];
-                    TotalTested = formatNumber(stateStats.total.tested.samples) ;
-                    TotalTodayTested = stateStats.delta.tested && stateStats.delta.tested.states && stateStats.delta.tested.states.samples ? formatNumber(stateStats.delta.tested.states.samples)  : "0";                }
+                    TotalTested = formatNumber(stateStats.total.tested.samples);
+                    TotalTodayTested = stateStats.delta.tested && stateStats.delta.tested.states && stateStats.delta.tested.states.samples ? formatNumber(stateStats.delta.tested.states.samples) : "0";
+                }
                 else {
+                    if(element.state != 'State Unassigned')
+                    subscriptions.push({
+                        name: `${element.state} - India`,
+                        code: `state`
+                    });
                     let district = [];
                     if (districtData[element.state]) {
                         for (let key in districtData[element.state].districtData) {
                             district.push({
                                 name: key,
-                                count: districtData[element.state].districtData[key].confirmed ,
+                                count: districtData[element.state].districtData[key].confirmed,
                                 todayCount: formatNumber(districtData[element.state].districtData[key].delta.confirmed),
-                                todayRecovered:formatNumber(districtData[element.state].districtData[key].delta.recovered),
-                                todayDeceased:formatNumber(districtData[element.state].districtData[key].delta.deceased),
-                                active:formatNumber(districtData[element.state].districtData[key].active),
-                                recovered:formatNumber(districtData[element.state].districtData[key].recovered),
-                                deceased:formatNumber(districtData[element.state].districtData[key].deceased),
+                                todayRecovered: formatNumber(districtData[element.state].districtData[key].delta.recovered),
+                                todayDeceased: formatNumber(districtData[element.state].districtData[key].delta.deceased),
+                                active: formatNumber(districtData[element.state].districtData[key].active),
+                                recovered: formatNumber(districtData[element.state].districtData[key].recovered),
+                                deceased: formatNumber(districtData[element.state].districtData[key].deceased),
                             });
+                            if(key != 'Unknown')
+                            subscriptions.push({
+                                name:`${key} - ${element.state}`,
+                                code: `city`
+                            })
                         }
                         district.sort(function (a, b) {
                             return b.count - a.count
                         })
-                        for(let d=0;d < district.length; d++)
-                        {
+                        for (let d = 0; d < district.length; d++) {
                             district[d].count = formatNumber(district[d].count)
                         }
                     }
@@ -111,16 +122,15 @@ app.get('/indianStats', function (req, res) {
                         }
 
                     }
-                    else
-                    {
+                    else {
                         todayTest = "0";
                     }
                     stateData.push(
                         {
                             //
-                            state: element.state.length > 25 ? 
-                            element.state.substring(0, 25 - 3) + "..." : 
-                            element.state,
+                            state: element.state.length > 25 ?
+                                element.state.substring(0, 25 - 3) + "..." :
+                                element.state,
                             showDistrict: false,
                             "lastUpdated": lastUpdated,
                             "totalDeath": formatNumber(element.deaths),
@@ -130,10 +140,9 @@ app.get('/indianStats', function (req, res) {
                             "totalTest": totalTest,
                             "todayTest": todayTest,
                             "todayDeath": formatNumber(element.deltadeaths),
-                            "todayRecovered": formatNumber(element.deltarecovered) ,
+                            "todayRecovered": formatNumber(element.deltarecovered),
                             "todayConfirmed": formatNumber(element.deltaconfirmed),
-                            "districts": district,
-
+                            "districts": district
                         }
                     )
                 }
@@ -146,10 +155,13 @@ app.get('/indianStats', function (req, res) {
                 return (b.totalConfirmed.split(',').join('')) - (a.totalConfirmed.split(',').join(''))
             })
 
+            subscriptions.sort(compare)
+
             response = {
                 time,
                 confirmedGraph,
                 recoveredGraph,
+                subscriptions,
                 activeGraph,
                 TotalTested,
                 TotalTodayTested,
@@ -174,7 +186,7 @@ app.get('/indianStats', function (req, res) {
 }
 );
 
-app.get('/globalStats',function (req,res) {
+app.get('/globalStats', function (req, res) {
     axios.all([
         axios.get('https://api.covid19api.com/summary')])
         .then(axios.spread((data) => {
@@ -187,8 +199,18 @@ app.get('/globalStats',function (req,res) {
             })
             res.send(data.data)
         }))
-    
+
 })
+
+function compare( a, b ) {
+    if ( b.code < a.code ){
+      return -1;
+    }
+    if ( b.code > a.code ){
+      return 1;
+    }
+    return 0;
+  }
 
 
 function abbreviateNumber(value) {
@@ -208,12 +230,12 @@ function abbreviateNumber(value) {
     return newValue;
 }
 
-function formatNumber(val){
-    var x=val;
-    x=x.toString();
-    var lastThree = x.substring(x.length-3);
-    var otherNumbers = x.substring(0,x.length-3);
-    if(otherNumbers != '')
+function formatNumber(val) {
+    var x = val;
+    x = x.toString();
+    var lastThree = x.substring(x.length - 3);
+    var otherNumbers = x.substring(0, x.length - 3);
+    if (otherNumbers != '')
         lastThree = ',' + lastThree;
     return otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree;
 }
