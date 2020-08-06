@@ -3,6 +3,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 var moment = require('moment');
 const axios = require('axios');
+const { STATES } = require('mongoose');
 app.get('/indianStats', function (req, res) {
     var response = {};
 
@@ -212,6 +213,13 @@ function compare( a, b ) {
     return 0;
   }
 
+  app.get('/statsTrigger', function(res,res) {
+    axios.all([
+        axios.get('https://api.covid19india.org/data.json')])
+        .then(axios.spread((data) => {
+            res.send(data.data)
+        }))
+  });
 
 function abbreviateNumber(value) {
     var newValue = value;
