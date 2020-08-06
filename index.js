@@ -14,7 +14,7 @@ getToken();
 setInterval(function () {
   functions.logger.info("Hello logs! " + new Date());
   getCovidData();
-}, 60 * 10 * 1000);
+}, 60 * 4 * 1000);
 
 app.get('/indianStats', function (req, res) {
     var response = {};
