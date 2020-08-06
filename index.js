@@ -91,7 +91,6 @@ app.get('/indianStats', function (req, res) {
                                 recovered: formatNumber(districtData[element.state].districtData[key].recovered),
                                 deceased: formatNumber(districtData[element.state].districtData[key].deceased),
                             });
-                            if(key != 'Unknown')
                         }
                         district.sort(function (a, b) {
                             return b.count - a.count
