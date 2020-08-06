@@ -371,7 +371,7 @@ function getToken() {
                 body: tgBody
               }
             }
-            console.log('MSG: ',token, payload)
+            console.log('MSG: ',subd.token, payload)
             return fcm.sendToDevice(sudb.token, payload).then((res) => {
               console.log(res);
   
