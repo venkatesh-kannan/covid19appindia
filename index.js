@@ -325,7 +325,7 @@ async function processCovidData(dta) {
         if (stateWise && stateWise.length > 0)
             stateWise = stateWise.map((st) => {
                 fbDoc.data = fbDoc.data.map((fb) => {
-                    if (fb.statecode === st.statecode && st.deltaconfirmed != '0' && st.lastupdatedtime != fb.lastupdatedtime && st.deltaconfirmed != fb.deltaconfirmed) {
+                    if (fb.statecode === st.statecode && st.deltaconfirmed != '0'  && st.deltaconfirmed != fb.deltaconfirmed) {
                         updatedData.push({
                             deltaconfirmed: st.deltaconfirmed,
                             lastupdatedtime: st.lastupdatedtime,
