@@ -75,7 +75,7 @@ app.get('/indianStats', function (req, res) {
                 else {
                     if(element.state != 'State Unassigned')
                     subscriptions.push({
-                        name: `${element.state} - India`,
+                        name: `${element.state}`,
                         code: `state`
                     });
                     let district = [];
@@ -92,10 +92,6 @@ app.get('/indianStats', function (req, res) {
                                 deceased: formatNumber(districtData[element.state].districtData[key].deceased),
                             });
                             if(key != 'Unknown')
-                            subscriptions.push({
-                                name:`${key} - ${element.state}`,
-                                code: `city`
-                            })
                         }
                         district.sort(function (a, b) {
                             return b.count - a.count
