@@ -274,7 +274,7 @@ function getToken() {
   }
   
   function getCovidData() {
-    axios.get('https://covid19india-new.herokuapp.com/statsTrigger')
+    axios.get('https://api.covid19india.org/data.json')
       .then((reps) => {
         processCovidData(reps.data).then(dta => {
           console.log(dta);
