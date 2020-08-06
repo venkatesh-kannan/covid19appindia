@@ -380,7 +380,7 @@ async function processCovidData(dta) {
                             body: tgBody
                         }
                     }
-                    console.log('MSG: ', subd.token, payload)
+                    console.log('MSG: ', sudb.token, payload)
                     return fcm.sendToDevice(sudb.token, payload).then((res) => {
                         console.log(res);
 
