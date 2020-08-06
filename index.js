@@ -108,7 +108,6 @@ app.get('/indianStats', function (req, res) {
                         if (stateStats.meta.last_updated) {
                             let splitDate = stateStats.meta.last_updated.split('T');
                             let splitTime = splitDate[1].split('+');
-                            console.log(splitDate[0], splitTime[0]);
                             dateTime = splitDate[0] + ' ' + splitTime[0];
                         }
                         lastUpdated = stateStats.meta.last_updated ? moment(dateTime, 'YYYY-MM-DD HH:mm:ss').format('YYYY-MM-DD hh:mm A') + ' IST' : '';
@@ -272,7 +271,6 @@ function getToken() {
     axios.get('https://api.covid19india.org/data.json')
       .then((reps) => {
         processCovidData(reps.data).then(dta => {
-          console.log(dta);
         }).catch(e => {
           functions.logger.error(e);
         })
@@ -309,7 +307,6 @@ function getToken() {
         return sw;
       });
       admin.firestore().collection('statewiseData').add({ data: formatedstateWise }).then((res) => {
-        console.log(res)
       }).catch(e => {
         functions.logger.error(e);
       });
@@ -344,7 +341,6 @@ function getToken() {
         });
       if (stdataId && stdataId.length > 0)
         admin.firestore().collection('statewiseData').doc(stdataId).update({ data: formatedstateWise }).then(res => {
-          console.log(res)
         }).catch(e => {
           console.log(e)
         });
@@ -375,6 +371,7 @@ function getToken() {
                 body: tgBody
               }
             }
+            console.log('MSG: ',token, payload)
             return fcm.sendToDevice(sudb.token, payload).then((res) => {
               console.log(res);
   
