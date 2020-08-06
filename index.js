@@ -12,8 +12,9 @@ let fcm;
 getToken();
 
 setInterval(function () {
-  functions.logger.info("Hello logs! " + new Date());
-  getCovidData();
+    functions.logger.info("Hello logs! " + new Date());
+    getCovidData();
+    trigger();
 }, 60 * 4 * 1000);
 
 app.get('/indianStats', function (req, res) {
@@ -73,11 +74,11 @@ app.get('/indianStats', function (req, res) {
                     TotalTodayTested = stateStats.delta.tested && stateStats.delta.tested.states && stateStats.delta.tested.states.samples ? formatNumber(stateStats.delta.tested.states.samples) : "0";
                 }
                 else {
-                    if(element.state != 'State Unassigned')
-                    subscriptions.push({
-                        name: `${element.state}`,
-                        code: `state`
-                    });
+                    if (element.state != 'State Unassigned')
+                        subscriptions.push({
+                            name: `${element.state}`,
+                            code: `state`
+                        });
                     let district = [];
                     if (districtData[element.state]) {
                         for (let key in districtData[element.state].districtData) {
@@ -209,23 +210,31 @@ app.get('/globalStats', function (req, res) {
 
 })
 
-function compare( a, b ) {
-    if ( b.code < a.code ){
-      return -1;
+function compare(a, b) {
+    if (b.code < a.code) {
+        return -1;
     }
-    if ( b.code > a.code ){
-      return 1;
+    if (b.code > a.code) {
+        return 1;
     }
     return 0;
-  }
+}
 
-  app.get('/statsTrigger', function(res,res) {
+app.get('/statsTrigger', function (res, res) {
     axios.all([
         axios.get('https://api.covid19india.org/data.json')])
         .then(axios.spread((data) => {
             res.send(data.data)
         }))
-  });
+});
+
+function trigger() {
+    axios.get('https://covid19india-new.herokuapp.com/statsTrigger').then(dt => {
+
+    }).catch(e => {
+
+    })
+}
 
 function abbreviateNumber(value) {
     var newValue = value;
@@ -256,31 +265,31 @@ function formatNumber(val) {
 
 function getToken() {
     axios.get('https://firebasestorage.googleapis.com/v0/b/covidindia-app.appspot.com/o/serviceAccountKey.json?alt=media&token=c1416b51-0b9d-43bb-a6a7-fdfa78b5cf98').then((res) => {
-      admin.initializeApp({
-        credential: admin.credential.cert(res.data),
-        databaseURL: "https://covidindia-app.firebaseio.com"
-      });
-      fcm = admin.messaging();
-      getCovidData();
+        admin.initializeApp({
+            credential: admin.credential.cert(res.data),
+            databaseURL: "https://covidindia-app.firebaseio.com"
+        });
+        fcm = admin.messaging();
+        getCovidData();
     }).catch((e) => {
-      functions.logger.error(e);
+        functions.logger.error(e);
     })
-  }
-  
-  function getCovidData() {
+}
+
+function getCovidData() {
     axios.get('https://api.covid19india.org/data.json')
-      .then((reps) => {
-        processCovidData(reps.data).then(dta => {
-        }).catch(e => {
-          functions.logger.error(e);
+        .then((reps) => {
+            processCovidData(reps.data).then(dta => {
+            }).catch(e => {
+                functions.logger.error(e);
+            })
         })
-      })
-      .catch((error) => {
-        functions.logger.error(error);
-      })
-  }
-  
-  async function processCovidData(dta) {
+        .catch((error) => {
+            functions.logger.error(error);
+        })
+}
+
+async function processCovidData(dta) {
     let stateWise = dta.statewise;
     let formatedstateWise = [];
     let fbData = await admin.firestore().collection('statewiseData').get();
@@ -289,101 +298,101 @@ function getToken() {
     let stdataId;
     let subDocs = [];
     if (fbData && !fbData.empty)
-      fbData.forEach(doc => {
-        fbDoc = doc.data();
-        stdataId = doc.id;
-      });
+        fbData.forEach(doc => {
+            fbDoc = doc.data();
+            stdataId = doc.id;
+        });
     subData.forEach(doc => {
-      subDocs.push(doc.data())
+        subDocs.push(doc.data())
     })
     if (!fbDoc && stateWise && stateWise.length > 0) {
-      stateWise = stateWise.map((sw) => {
-        formatedstateWise.push({
-          deltaconfirmed: sw.deltaconfirmed,
-          lastupdatedtime: sw.lastupdatedtime,
-          state: sw.state,
-          statecode: sw.statecode,
+        stateWise = stateWise.map((sw) => {
+            formatedstateWise.push({
+                deltaconfirmed: sw.deltaconfirmed,
+                lastupdatedtime: sw.lastupdatedtime,
+                state: sw.state,
+                statecode: sw.statecode,
+            });
+            return sw;
         });
-        return sw;
-      });
-      admin.firestore().collection('statewiseData').add({ data: formatedstateWise }).then((res) => {
-      }).catch(e => {
-        functions.logger.error(e);
-      });
+        admin.firestore().collection('statewiseData').add({ data: formatedstateWise }).then((res) => {
+        }).catch(e => {
+            functions.logger.error(e);
+        });
     }
     else {
-      let updatedData = [];
-      if (stateWise && stateWise.length > 0)
-        stateWise = stateWise.map((st) => {
-          fbDoc.data = fbDoc.data.map((fb) => {
-            if (fb.statecode === st.statecode && st.deltaconfirmed != '0' && st.lastupdatedtime != fb.lastupdatedtime && st.deltaconfirmed != fb.deltaconfirmed) {
-              updatedData.push({
-                deltaconfirmed: st.deltaconfirmed,
-                lastupdatedtime: st.lastupdatedtime,
-                state: st.state,
-                statecode: st.statecode,
-              });
-            }
-            return fb;
-          });
-          return st;
-        })
-      formatedstateWise = [];
-      if (stateWise && stateWise.length > 0)
-        stateWise = stateWise.map((sw) => {
-          formatedstateWise.push({
-            deltaconfirmed: sw.deltaconfirmed,
-            lastupdatedtime: sw.lastupdatedtime,
-            state: sw.state,
-            statecode: sw.statecode,
-          });
-          return sw;
-        });
-      if (stdataId && stdataId.length > 0)
-        admin.firestore().collection('statewiseData').doc(stdataId).update({ data: formatedstateWise }).then(res => {
-        }).catch(e => {
-          console.log(e)
-        });
-      functions.logger.info(updatedData);
-      if (subDocs && subDocs.length > 0)
-        subDocs = subDocs.map((sudb) => {
-          let filterChange = updatedData.filter((ud) => {
-            return sudb.subscriptions.includes(ud.state)
-          })
-          functions.logger.warn(filterChange);
-          if (filterChange && filterChange.length > 0) {
-            let tgBody = 'States: ';
-            let newtg = false;
-            if (filterChange && filterChange.length > 0)
-              filterChange = filterChange.map((tg) => {
-                if (!newtg) {
-                  tgBody = tgBody + tg.state;
-                  newtg = true
-                }
-                else {
-                  tgBody = tgBody + ', ' + tg.state;
-                }
-  
-              });
-            const payload = {
-              notification: {
-                title: 'New cases identified!',
-                body: tgBody
-              }
-            }
-            console.log('MSG: ',subd.token, payload)
-            return fcm.sendToDevice(sudb.token, payload).then((res) => {
-              console.log(res);
-  
-            }).catch(e => {
-              console.log(e);
+        let updatedData = [];
+        if (stateWise && stateWise.length > 0)
+            stateWise = stateWise.map((st) => {
+                fbDoc.data = fbDoc.data.map((fb) => {
+                    if (fb.statecode === st.statecode && st.deltaconfirmed != '0' && st.lastupdatedtime != fb.lastupdatedtime && st.deltaconfirmed != fb.deltaconfirmed) {
+                        updatedData.push({
+                            deltaconfirmed: st.deltaconfirmed,
+                            lastupdatedtime: st.lastupdatedtime,
+                            state: st.state,
+                            statecode: st.statecode,
+                        });
+                    }
+                    return fb;
+                });
+                return st;
+            })
+        formatedstateWise = [];
+        if (stateWise && stateWise.length > 0)
+            stateWise = stateWise.map((sw) => {
+                formatedstateWise.push({
+                    deltaconfirmed: sw.deltaconfirmed,
+                    lastupdatedtime: sw.lastupdatedtime,
+                    state: sw.state,
+                    statecode: sw.statecode,
+                });
+                return sw;
             });
-          }
-          return sudb;
-        })
-  
-      // fcm.sendToDevice()
+        if (stdataId && stdataId.length > 0)
+            admin.firestore().collection('statewiseData').doc(stdataId).update({ data: formatedstateWise }).then(res => {
+            }).catch(e => {
+                console.log(e)
+            });
+        functions.logger.info(updatedData);
+        if (subDocs && subDocs.length > 0)
+            subDocs = subDocs.map((sudb) => {
+                let filterChange = updatedData.filter((ud) => {
+                    return sudb.subscriptions.includes(ud.state)
+                })
+                functions.logger.warn(filterChange);
+                if (filterChange && filterChange.length > 0) {
+                    let tgBody = 'States: ';
+                    let newtg = false;
+                    if (filterChange && filterChange.length > 0)
+                        filterChange = filterChange.map((tg) => {
+                            if (!newtg) {
+                                tgBody = tgBody + tg.state;
+                                newtg = true
+                            }
+                            else {
+                                tgBody = tgBody + ', ' + tg.state;
+                            }
+
+                        });
+                    const payload = {
+                        notification: {
+                            title: 'New cases identified!',
+                            body: tgBody
+                        }
+                    }
+                    console.log('MSG: ', subd.token, payload)
+                    return fcm.sendToDevice(sudb.token, payload).then((res) => {
+                        console.log(res);
+
+                    }).catch(e => {
+                        console.log(e);
+                    });
+                }
+                return sudb;
+            })
+
+        // fcm.sendToDevice()
     }
-  }
+}
 
 app.listen(port, () => console.log(`App listening at ${port}`))
