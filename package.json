@@ -13,7 +13,7 @@
     "firebase-functions": "^3.9.0",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.31",
-    "mongodb": "^2.2.33",
+    "mongodb": "^3.6.1",
     "mongoose": "^5.9.7"
   },
   "keywords": [
